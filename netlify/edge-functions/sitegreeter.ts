@@ -35,7 +35,7 @@ export default async function handler(
   context: Context,
 ): Promise<Response> {
   const loggingEndpoint = Netlify.env.get("LOGGING_ENDPOINT");
-  if (loggingEndpoint === undefined) {
+  if (loggingEndpoint === undefined || loggingEndpoint === null || loggingEndpoint.length === 0) {
     // next response should be invoked automatically
     return
   }
