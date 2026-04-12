@@ -34,6 +34,12 @@ export default async function handler(
   request: Request,
   context: Context,
 ): Promise<Response> {
+  const loggingEndpoint = Netlify.env.get("LOGGING_ENDPOINT");
+  if (loggingEndpoint === undefined || loggingEndpoint === null || loggingEndpoint.length === 0) {
+    // next response should be invoked automatically
+    return
+  }
+  
   // Parse URL for query parameters
   const url = new URL(request.url);
   const queryParams: Record<string, string> = {};
@@ -66,7 +72,7 @@ export default async function handler(
 
   // Fire async event to send results
   setTimeout(() => {
-    postResults(request, context, headers, queryParams, resp.status).catch(
+    postResults(request, context, loggingEndpoint, headers, queryParams, resp.status).catch(
       console.error,
     );
   }, 0);
@@ -77,13 +83,11 @@ export default async function handler(
 async function postResults(
   request: Request,
   context: Context,
+  loggingEndpoint: string,
   headers: Record<string, string>,
   queryParams: Record<string, string>,
   status: any,
 ): Promise<void> {
-  // Get the logging endpoint from environment variable, fallback to example
-  const loggingEndpoint =
-    Netlify.env.get("LOGGING_ENDPOINT") || "https://post.example.com/netlify";
   const loggingKey = Netlify.env.get("LOGGING_KEY") || "unknown";
 
   try {
